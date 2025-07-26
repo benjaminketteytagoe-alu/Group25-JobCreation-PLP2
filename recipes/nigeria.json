@@ -1,0 +1,14 @@
+[
+    {
+        "name": "Jollof Rice",
+        "ingredients": [
+            "rice",
+            " tomatoes",
+            " onions",
+            " pepper",
+            " oil"
+        ],
+        "instructions": "Heat oil and saut\u00e9 onions.\nAdd blended tomatoes and spices.\nAdd rice and cook until done.",
+        "cook_time": "45 minutes"
+    }
+]
