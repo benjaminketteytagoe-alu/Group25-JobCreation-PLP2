@@ -1,0 +1,26 @@
+Ubugari Recipe
+{
+  "name": "Ubugari",
+    "ingredients": [
+        "cassava flour",
+        "water"
+    ],
+    "instructions": "Bring water to a boil in a pot.\nSlowly add cassava flour while stirring continuously with a wooden spoon (umwiko).\nContinue cooking and stirring until a firm, smooth, and consistent dough forms.",
+    "cook_time": "15-20 minutes"
+}  
+Cassava stew
+{
+    "name": "Cassava Stew",
+    "ingredients": [
+        "pounded cassava leaves",
+        "palm oil",
+        "onions",
+        "garlic",
+        "ginger",
+        "tomatoes",
+        "peppers",
+        "salt",
+    ],
+    "instructions": "pound cassava leaves thoroughly and boil them until tender (this removes bitterness).\nDrain and set aside.\nIn a separate pot, heat palm oil and chopped onions, garlic, and ginger until fragrant.\nAdd chopped tomatoes and peppers, and cook until softened.\nStir in the boiled cassava leaves.\nSimmer on low heat for 20-30 minutes, allowing flavors to meld, stirring occasionally to prevent sticking.",
+    "cook_time": "45-60 minutes"
+}
