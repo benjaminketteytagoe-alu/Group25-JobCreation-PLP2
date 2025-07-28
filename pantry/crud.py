@@ -230,13 +230,20 @@ class RecipeCRUD:
         return recipe
     
     @staticmethod
-    def add_recipe(name, country_id, instructions, prep_time="", cook_time="", servings=None, family_notes=""):
+    def add_recipe(name, country_id, instructions, prep_time="", cook_time="", servings=None, family_notes="", user_id=None):
         """Add a new recipe"""
         query = """
-            INSERT INTO recipes (name, country_id, instructions, prep_time, cook_time, servings, family_notes)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO recipes (name, country_id, instructions, prep_time, cook_time, servings, family_notes, user_id)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
         """
-        result = pantry_vault.execute_update(query, (name, country_id, instructions, prep_time, cook_time, servings, family_notes))
+        result = pantry_vault.execute_update(query, (name, country_id, instructions, prep_time, cook_time, servings, family_notes, user_id))
+        return result > 0
+
+    @staticmethod
+    def delete_recipe(recipe_id, user_id):
+        """Delete a recipe only if it belongs to the given user_id"""
+        query = "DELETE FROM recipes WHERE id = %s AND user_id = %s"
+        result = pantry_vault.execute_update(query, (recipe_id, user_id))
         return result > 0
     
     @staticmethod

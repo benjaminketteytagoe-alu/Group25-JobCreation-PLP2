@@ -158,7 +158,13 @@ class PantryCLI:
             success, message = UserCRUD.register_new_user(username, email, password, country_id)
             if success:
                 print(f"✓ {message}")
-                print("You can now login with your credentials.")
+                # Automatically log in the user after registration
+                if UserCRUD.authenticate_user(username, password):
+                    self.authenticated = True
+                    self.current_user = UserCRUD.get_current_user()
+                    print(f"Welcome, {username}! You are now logged in.")
+                else:
+                    print("Registration succeeded but automatic login failed. Please try logging in manually.")
             else:
                 print(f"✗ {message}")
                 
@@ -290,6 +296,12 @@ class PantryCLI:
             if not name:
                 print("Food name is required.")
                 return
+            if len(name) < 4:
+                print("Food name must be at least 4 characters long.")
+                return
+            if not all(c.isalpha() or c.isspace() for c in name):
+                print("Food name must contain only letters and spaces.")
+                return
             
             # Select country
             countries = CountryCRUD.get_all_countries()
@@ -315,6 +327,9 @@ class PantryCLI:
                 if not new_country:
                     print("Country name is required.")
                     return
+                if not all(c.isalpha() or c.isspace() for c in new_country):
+                    print("Country name must contain only letters and spaces.")
+                    return
                 
                 if CountryCRUD.add_country(new_country):
                     print(f"Country '{new_country}' added successfully!")
@@ -332,7 +347,12 @@ class PantryCLI:
                 country_id = selected_country['id']
             
             # Get description
-            description = input("Enter description (optional): ").strip()
+            while True:
+                description = input("Enter description (optional): ").strip()
+                if description and description[0].isdigit():
+                    print("Description should not start with a number. Please re-enter.")
+                    continue
+                break
             
             # Add food to database
             if FoodCRUD.add_food(name, country_id, description):
@@ -420,12 +440,13 @@ class PantryCLI:
                     ["1", "View All Recipes"],
                     ["2", "View Recipe Details"],
                     ["3", "Add New Recipe"],
-                    ["4", "Back to Main Menu"]
+                    ["4", "Delete My Recipe"],
+                    ["5", "Back to Main Menu"]
                 ]
                 
                 print(tabulate(recipe_options, headers=["Option", "Action"], tablefmt="simple"))
                 
-                choice = self.get_user_choice("Enter your choice: ", ["1", "2", "3", "4"])
+                choice = self.get_user_choice("Enter your choice: ", ["1", "2", "3", "4", "5"])
                 
                 if choice == "1":
                     self.view_all_recipes()
@@ -434,6 +455,8 @@ class PantryCLI:
                 elif choice == "3":
                     self.add_new_recipe()
                 elif choice == "4":
+                    self.delete_my_recipe()
+                elif choice == "5":
                     break
                     
             except Exception as e:
@@ -477,7 +500,7 @@ class PantryCLI:
             print(f"Error viewing recipe details: {e}")
     
     def add_new_recipe(self):
-        """Handle adding new recipe"""
+        """Handle adding a new recipe"""
         print("\nADD NEW RECIPE")
         print("-" * 20)
         
@@ -548,13 +571,41 @@ class PantryCLI:
             family_notes = input("Family notes/story (optional): ").strip()
             
             # Add recipe to database
-            if RecipeCRUD.add_recipe(name, country_id, instructions, prep_time, cook_time, servings, family_notes):
+            user_id = self.current_user['id'] if self.current_user and 'id' in self.current_user else None
+            if RecipeCRUD.add_recipe(name, country_id, instructions, prep_time, cook_time, servings, family_notes, user_id):
                 print(f"✓ Recipe '{name}' added successfully!")
             else:
                 print(f"✗ Failed to add recipe '{name}'.")
                 
         except Exception as e:
             print(f"Error adding recipe: {e}")
+    
+    def delete_my_recipe(self):
+        """Allow the user to delete their own recipe by ID"""
+        try:
+            user_id = self.current_user['id'] if self.current_user and 'id' in self.current_user else None
+            if not user_id:
+                print("User ID not found. Cannot delete recipes.")
+                return
+            recipes = RecipeCRUD.get_all_recipes()
+            my_recipes = [r for r in recipes if r.get('user_id') == user_id]
+            if not my_recipes:
+                print("You have no recipes to delete.")
+                return
+            RecipeCRUD.display_recipes_table(my_recipes, title="Your Recipes")
+            recipe_ids = [str(r['id']) for r in my_recipes]
+            recipe_id = input("Enter the ID of the recipe to delete (or 'back' to cancel): ").strip()
+            if recipe_id.lower() == 'back':
+                return
+            if recipe_id not in recipe_ids:
+                print("Invalid recipe ID.")
+                return
+            if RecipeCRUD.delete_recipe(int(recipe_id), user_id):
+                print("Recipe deleted successfully!")
+            else:
+                print("Failed to delete recipe. Make sure you own this recipe.")
+        except Exception as e:
+            print(f"Error deleting recipe: {e}")
     
     def logout(self):
         """Handle user logout"""

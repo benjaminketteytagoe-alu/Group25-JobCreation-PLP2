@@ -7,6 +7,7 @@ A food management system supporting multiple countries and family recipes.
 import sys
 import os
 import traceback
+from config import Config
 
 # Add the current directory to Python path
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -47,8 +48,8 @@ def import_modules():
     """Import required modules with error handling"""
     try:
         # Try direct import first (files in same directory as main.py)
-        from db import pantry_vault
-        from cli import cli
+        from pantry.db import pantry_vault
+        from pantry.cli import cli
         return pantry_vault, cli
     except ImportError as e1:
         try:
