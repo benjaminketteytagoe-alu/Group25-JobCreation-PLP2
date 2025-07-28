@@ -306,6 +306,13 @@ class RecipeCRUD:
         
         print("-" * 50)
 
+    @staticmethod
+    def add_ingredient_to_recipe(recipe_id, ingredient_id, quantity, unit):
+        """Link an ingredient to a recipe with quantity and unit"""
+        query = "INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity, unit) VALUES (%s, %s, %s, %s)"
+        result = pantry_vault.execute_update(query, (recipe_id, ingredient_id, quantity, unit))
+        return result > 0
+
 
 class IngredientCRUD:
     """CRUD operations for ingredients"""

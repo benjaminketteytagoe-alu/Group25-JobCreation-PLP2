@@ -22,16 +22,16 @@ class PantryVault:
         self.conn = None
         self.cursor = None
         self.current_user = None
-
+    
     def connect(self):
         try:
             self.conn = mysql.connector.connect(**Config.get_connection_params())
             self.cursor = self.conn.cursor(dictionary=True)
-            return True
+                return True
         except mysql.connector.Error as exc:
             print(f"Database connection error: {exc}")
             return False
-
+    
     def disconnect(self):
         if self.cursor:
             self.cursor.close()
@@ -71,7 +71,7 @@ class PantryVault:
         except Exception as e:
             print(f"Error checking tables: {e}")
             return False
-
+    
     def execute_query(self, query, params=None):
         self.ensure_connection()
         try:
@@ -92,7 +92,7 @@ class PantryVault:
         except Exception as e:
             print(f"Query error: {e}")
             return []
-
+    
     def execute_update(self, query, params=None):
         self.ensure_connection()
         try:
@@ -115,7 +115,7 @@ class PantryVault:
         except Exception as e:
             print(f"Update error: {e}")
             return 0
-
+    
     def validate_user(self, username, password):
         self.ensure_connection()
         # Placeholder: Implement actual user validation
@@ -125,12 +125,12 @@ class PantryVault:
             user = self.cursor.fetchone()
             if user:
                 self.current_user = user
-                return True
+            return True
             return False
         except Exception as e:
             print(f"User validation error: {e}")
-            return False
-
+        return False
+    
     def register_user(self, username, email, password, country_id=None):
         self.ensure_connection()
         try:
@@ -143,12 +143,12 @@ class PantryVault:
         except Exception as e:
             print(f"User registration error: {e}")
             return False, f"Registration failed: {e}"
-
+    
     def get_current_user(self):
         return self.current_user
-
+    
     def logout(self):
         self.current_user = None
-
+    
 # Instantiate pantry_vault for import
 pantry_vault = PantryVault()

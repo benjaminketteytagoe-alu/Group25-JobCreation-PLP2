@@ -503,39 +503,31 @@ class PantryCLI:
         """Handle adding a new recipe"""
         print("\nADD NEW RECIPE")
         print("-" * 20)
-        
         try:
             # Get recipe name
             name = input("Enter recipe name: ").strip()
             if not name:
                 print("Recipe name is required.")
                 return
-            
             # Select country
             countries = CountryCRUD.get_all_countries()
             if not countries:
                 print("No countries available. Please add a country first.")
                 return
-                
             print("\nSelect Country:")
-            
             country_options = []
             for i, country in enumerate(countries, 1):
                 country_options.append([str(i), country['name']])
             country_options.append([str(len(countries) + 1), "Add New Country"])
-            
             print(tabulate(country_options, headers=["Option", "Country"], tablefmt="simple"))
-            
             valid_choices = [str(i) for i in range(1, len(countries) + 2)]
             choice = self.get_user_choice("Select country: ", valid_choices)
-            
             if choice == str(len(countries) + 1):
                 # Add new country
                 new_country = input("Enter new country name: ").strip()
                 if not new_country:
                     print("Country name is required.")
                     return
-                
                 if CountryCRUD.add_country(new_country):
                     print(f"Country '{new_country}' added successfully!")
                     country = CountryCRUD.get_country_by_name(new_country)
@@ -550,33 +542,50 @@ class PantryCLI:
             else:
                 selected_country = countries[int(choice) - 1]
                 country_id = selected_country['id']
-            
             # Get recipe details
             print("\nEnter recipe details:")
             instructions = input("Instructions (required): ").strip()
             if not instructions:
                 print("Instructions are required.")
                 return
-            
             prep_time = input("Preparation time (optional): ").strip()
             cook_time = input("Cooking time (optional): ").strip()
-            
             try:
                 servings_input = input("Number of servings (optional): ").strip()
                 servings = int(servings_input) if servings_input else None
             except ValueError:
                 print("Invalid number for servings, using None.")
                 servings = None
-            
             family_notes = input("Family notes/story (optional): ").strip()
-            
             # Add recipe to database
             user_id = self.current_user['id'] if self.current_user and 'id' in self.current_user else None
             if RecipeCRUD.add_recipe(name, country_id, instructions, prep_time, cook_time, servings, family_notes, user_id):
                 print(f"✓ Recipe '{name}' added successfully!")
+                # Get the new recipe's ID
+                recipes = RecipeCRUD.get_all_recipes()
+                new_recipe = next((r for r in recipes if r['name'] == name and r.get('user_id') == user_id), None)
+                if new_recipe:
+                    recipe_id = new_recipe['id']
+                    print("\nNow, let's add ingredients to your recipe.")
+                    while True:
+                        ing_name = input("Ingredient name (leave blank to finish): ").strip()
+                        if not ing_name:
+                            break
+                        quantity = input("Quantity (e.g., 2): ").strip()
+                        unit = input("Unit (e.g., cups, tbsp): ").strip()
+                        ingredient_id = IngredientCRUD.add_ingredient(ing_name)
+                        if ingredient_id:
+                            if RecipeCRUD.add_ingredient_to_recipe(recipe_id, ingredient_id, quantity, unit):
+                                print(f"✓ Added {quantity} {unit} {ing_name} to recipe.")
+                            else:
+                                print(f"✗ Failed to link ingredient '{ing_name}' to recipe.")
+                        else:
+                            print(f"✗ Failed to add ingredient '{ing_name}'.")
+                    print("All ingredients added!")
+                else:
+                    print("Could not find the new recipe to add ingredients.")
             else:
                 print(f"✗ Failed to add recipe '{name}'.")
-                
         except Exception as e:
             print(f"Error adding recipe: {e}")
     
