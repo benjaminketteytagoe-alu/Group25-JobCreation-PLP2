@@ -559,31 +559,25 @@ class PantryCLI:
             family_notes = input("Family notes/story (optional): ").strip()
             # Add recipe to database
             user_id = self.current_user['id'] if self.current_user and 'id' in self.current_user else None
-            if RecipeCRUD.add_recipe(name, country_id, instructions, prep_time, cook_time, servings, family_notes, user_id):
+            recipe_id = RecipeCRUD.add_recipe(name, country_id, instructions, prep_time, cook_time, servings, family_notes, user_id)
+            if recipe_id:
                 print(f"✓ Recipe '{name}' added successfully!")
-                # Get the new recipe's ID
-                recipes = RecipeCRUD.get_all_recipes()
-                new_recipe = next((r for r in recipes if r['name'] == name and r.get('user_id') == user_id), None)
-                if new_recipe:
-                    recipe_id = new_recipe['id']
-                    print("\nNow, let's add ingredients to your recipe.")
-                    while True:
-                        ing_name = input("Ingredient name (leave blank to finish): ").strip()
-                        if not ing_name:
-                            break
-                        quantity = input("Quantity (e.g., 2): ").strip()
-                        unit = input("Unit (e.g., cups, tbsp): ").strip()
-                        ingredient_id = IngredientCRUD.add_ingredient(ing_name)
-                        if ingredient_id:
-                            if RecipeCRUD.add_ingredient_to_recipe(recipe_id, ingredient_id, quantity, unit):
-                                print(f"✓ Added {quantity} {unit} {ing_name} to recipe.")
-                            else:
-                                print(f"✗ Failed to link ingredient '{ing_name}' to recipe.")
+                print("\nNow, let's add ingredients to your recipe.")
+                while True:
+                    ing_name = input("Ingredient name (leave blank to finish): ").strip()
+                    if not ing_name:
+                        break
+                    quantity = input("Quantity (e.g., 2): ").strip()
+                    unit = input("Unit (e.g., cups, tbsp): ").strip()
+                    ingredient_id = IngredientCRUD.add_ingredient(ing_name)
+                    if ingredient_id:
+                        if RecipeCRUD.add_ingredient_to_recipe(recipe_id, ingredient_id, quantity, unit):
+                            print(f"✓ Added {quantity} {unit} {ing_name} to recipe.")
                         else:
-                            print(f"✗ Failed to add ingredient '{ing_name}'.")
-                    print("All ingredients added!")
-                else:
-                    print("Could not find the new recipe to add ingredients.")
+                            print(f"✗ Failed to link ingredient '{ing_name}' to recipe.")
+                    else:
+                        print(f"✗ Failed to add ingredient '{ing_name}'.")
+                print("All ingredients added!")
             else:
                 print(f"✗ Failed to add recipe '{name}'.")
         except Exception as e:
