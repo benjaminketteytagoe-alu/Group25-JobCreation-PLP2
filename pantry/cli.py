@@ -590,9 +590,6 @@ class PantryCLI:
                 if prep_time.isdigit():
                     print("Preparation time cannot be only numbers.")
                     continue
-                if prep_time[0].isdigit():
-                    print("Preparation time cannot start with a number.")
-                    continue
                 break
             # Cook time validation
             while True:
@@ -602,11 +599,7 @@ class PantryCLI:
                 if cook_time.isdigit():
                     print("Cooking time cannot be only numbers.")
                     continue
-                if cook_time[0].isdigit():
-                    print("Cooking time cannot start with a number.")
-                    continue
-                break
-            # Servings validation
+                break            # Servings validation
             while True:
                 servings_input = input("Number of servings (optional): ").strip()
                 if not servings_input:
