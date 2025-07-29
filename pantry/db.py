@@ -27,7 +27,7 @@ class PantryVault:
         try:
             self.conn = mysql.connector.connect(**Config.get_connection_params())
             self.cursor = self.conn.cursor(dictionary=True)
-                return True
+            return True
         except mysql.connector.Error as exc:
             print(f"Database connection error: {exc}")
             return False
