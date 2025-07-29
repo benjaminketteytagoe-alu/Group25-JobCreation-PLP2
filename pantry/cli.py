@@ -195,11 +195,14 @@ class PantryCLI:
         print(tabulate(menu_options, headers=["Option", "Description"], tablefmt="simple"))
         print("-" * 40)
     
-    def get_user_choice(self, prompt="Enter your choice: ", valid_choices=None):
-        """Get user input with validation"""
+    def get_user_choice(self, prompt="Enter your choice: ", valid_choices=None, numeric_only=False):
+        """Get user input with validation. If numeric_only is True, only accept numbers."""
         while True:
             try:
                 choice = input(f"\n{prompt}").strip()
+                if numeric_only and not choice.isdigit():
+                    print("Please enter a number.")
+                    continue
                 if valid_choices and choice not in valid_choices:
                     print(f"Please enter a valid choice: {', '.join(valid_choices)}")
                     continue
@@ -267,20 +270,20 @@ class PantryCLI:
             
             FoodCRUD.display_foods_table(foods)
             
-            food_id_input = input("\nEnter food ID to view details (or 'back' to return): ").strip()
-            
-            if food_id_input.lower() == 'back':
-                return
-            
-            try:
+            while True:
+                food_id_input = input("\nEnter food ID to view details (or 'back' to return): ").strip()
+                if food_id_input.lower() == 'back':
+                    return
+                if not food_id_input.isdigit():
+                    print("Please enter a valid numeric food ID.")
+                    continue
                 food_id = int(food_id_input)
                 food = FoodCRUD.get_food_with_ingredients(food_id)
                 if food:
                     FoodCRUD.display_food_details(food)
+                    break
                 else:
                     print("Food not found.")
-            except ValueError:
-                print("Please enter a valid food ID.")
                 
         except Exception as e:
             print(f"Error viewing food details: {e}")
@@ -414,18 +417,23 @@ class PantryCLI:
         try:
             print("\nADD NEW INGREDIENT")
             print("-" * 25)
-            
-            name = input("Enter ingredient name: ").strip()
-            if not name:
-                print("Ingredient name is required.")
-                return
-            
+            while True:
+                name = input("Enter ingredient name: ").strip()
+                if not name:
+                    print("Ingredient name is required.")
+                    continue
+                if name.isdigit():
+                    print("Ingredient name cannot be only numbers.")
+                    continue
+                if name[0].isdigit():
+                    print("Ingredient name cannot start with a number.")
+                    continue
+                break
             ingredient_id = IngredientCRUD.add_ingredient(name)
             if ingredient_id:
                 print(f"✓ Ingredient '{name}' added successfully!")
             else:
                 print(f"✗ Failed to add ingredient '{name}'.")
-                
         except Exception as e:
             print(f"Error adding ingredient: {e}")
     
@@ -504,11 +512,25 @@ class PantryCLI:
         print("\nADD NEW RECIPE")
         print("-" * 20)
         try:
-            # Get recipe name
-            name = input("Enter recipe name: ").strip()
-            if not name:
-                print("Recipe name is required.")
-                return
+            # Get recipe name with validation
+            while True:
+                name = input("Enter recipe name: ").strip()
+                if not name:
+                    print("Recipe name is required.")
+                    continue
+                if len(name) < 4:
+                    print("Recipe name must be at least 4 characters long.")
+                    continue
+                if name.isdigit():
+                    print("Recipe name cannot be only numbers.")
+                    continue
+                if name[0].isdigit():
+                    print("Recipe name cannot start with a number.")
+                    continue
+                if not all(c.isalpha() or c.isspace() for c in name):
+                    print("Recipe name must contain only letters and spaces.")
+                    continue
+                break
             # Select country
             countries = CountryCRUD.get_all_countries()
             if not countries:
@@ -521,41 +543,80 @@ class PantryCLI:
             country_options.append([str(len(countries) + 1), "Add New Country"])
             print(tabulate(country_options, headers=["Option", "Country"], tablefmt="simple"))
             valid_choices = [str(i) for i in range(1, len(countries) + 2)]
-            choice = self.get_user_choice("Select country: ", valid_choices)
-            if choice == str(len(countries) + 1):
-                # Add new country
-                new_country = input("Enter new country name: ").strip()
-                if not new_country:
-                    print("Country name is required.")
-                    return
-                if CountryCRUD.add_country(new_country):
-                    print(f"Country '{new_country}' added successfully!")
-                    country = CountryCRUD.get_country_by_name(new_country)
-                    if country:
-                        country_id = country['id']
+            while True:
+                choice = self.get_user_choice("Select country: ", valid_choices, numeric_only=True)
+                if choice == str(len(countries) + 1):
+                    # Add new country
+                    new_country = input("Enter new country name: ").strip()
+                    if not new_country:
+                        print("Country name is required.")
+                        continue
+                    if CountryCRUD.add_country(new_country):
+                        print(f"Country '{new_country}' added successfully!")
+                        country = CountryCRUD.get_country_by_name(new_country)
+                        if country:
+                            country_id = country['id']
+                        else:
+                            print("Error retrieving new country.")
+                            return
                     else:
-                        print("Error retrieving new country.")
+                        print("Failed to add country.")
                         return
+                    break
                 else:
-                    print("Failed to add country.")
-                    return
-            else:
-                selected_country = countries[int(choice) - 1]
-                country_id = selected_country['id']
+                    selected_country = countries[int(choice) - 1]
+                    country_id = selected_country['id']
+                    break
             # Get recipe details
             print("\nEnter recipe details:")
-            instructions = input("Instructions (required): ").strip()
-            if not instructions:
-                print("Instructions are required.")
-                return
-            prep_time = input("Preparation time (optional): ").strip()
-            cook_time = input("Cooking time (optional): ").strip()
-            try:
+            # Description validation
+            while True:
+                instructions = input("Instructions (required): ").strip()
+                if not instructions:
+                    print("Instructions are required.")
+                    continue
+                if instructions.isdigit():
+                    print("Instructions cannot be only numbers.")
+                    continue
+                if instructions[0].isdigit():
+                    print("Instructions cannot start with a number.")
+                    continue
+                break
+            # Prep time validation
+            while True:
+                prep_time = input("Preparation time (e.g., '30 minutes'): ").strip()
+                if not prep_time:
+                    break
+                if prep_time.isdigit():
+                    print("Preparation time cannot be only numbers.")
+                    continue
+                if prep_time[0].isdigit():
+                    print("Preparation time cannot start with a number.")
+                    continue
+                break
+            # Cook time validation
+            while True:
+                cook_time = input("Cooking time (e.g., '45 minutes'): ").strip()
+                if not cook_time:
+                    break
+                if cook_time.isdigit():
+                    print("Cooking time cannot be only numbers.")
+                    continue
+                if cook_time[0].isdigit():
+                    print("Cooking time cannot start with a number.")
+                    continue
+                break
+            # Servings validation
+            while True:
                 servings_input = input("Number of servings (optional): ").strip()
-                servings = int(servings_input) if servings_input else None
-            except ValueError:
-                print("Invalid number for servings, using None.")
-                servings = None
+                if not servings_input:
+                    servings = None
+                    break
+                if not servings_input.isdigit() or int(servings_input) <= 0:
+                    print("Please enter a valid positive integer for servings.")
+                    continue
+                servings = int(servings_input)
+                break
             family_notes = input("Family notes/story (optional): ").strip()
             # Add recipe to database
             user_id = self.current_user['id'] if self.current_user and 'id' in self.current_user else None
@@ -567,7 +628,28 @@ class PantryCLI:
                     ing_name = input("Ingredient name (leave blank to finish): ").strip()
                     if not ing_name:
                         break
-                    quantity = input("Quantity (e.g., 2): ").strip()
+                    if len(ing_name) < 2:
+                        print("Ingredient name must be at least 2 characters long.")
+                        continue
+                    if ing_name.isdigit():
+                        print("Ingredient name cannot be only numbers.")
+                        continue
+                    if ing_name[0].isdigit():
+                        print("Ingredient name cannot start with a number.")
+                        continue
+                    if not all(c.isalpha() or c.isspace() for c in ing_name):
+                        print("Ingredient name must contain only letters and spaces.")
+                        continue
+                    while True:
+                        quantity = input("Quantity (e.g., 2): ").strip()
+                        if not quantity:
+                            print("Quantity is required.")
+                            continue
+                        try:
+                            float(quantity)
+                            break
+                        except ValueError:
+                            print("Please enter a valid number for quantity.")
                     unit = input("Unit (e.g., cups, tbsp): ").strip()
                     ingredient_id = IngredientCRUD.add_ingredient(ing_name)
                     if ingredient_id:
@@ -597,16 +679,21 @@ class PantryCLI:
                 return
             RecipeCRUD.display_recipes_table(my_recipes, title="Your Recipes")
             recipe_ids = [str(r['id']) for r in my_recipes]
-            recipe_id = input("Enter the ID of the recipe to delete (or 'back' to cancel): ").strip()
-            if recipe_id.lower() == 'back':
-                return
-            if recipe_id not in recipe_ids:
-                print("Invalid recipe ID.")
-                return
-            if RecipeCRUD.delete_recipe(int(recipe_id), user_id):
-                print("Recipe deleted successfully!")
-            else:
-                print("Failed to delete recipe. Make sure you own this recipe.")
+            while True:
+                recipe_id = input("Enter the ID of the recipe to delete (or 'back' to cancel): ").strip()
+                if recipe_id.lower() == 'back':
+                    return
+                if not recipe_id.isdigit():
+                    print("Please enter a valid numeric recipe ID.")
+                    continue
+                if recipe_id not in recipe_ids:
+                    print("Invalid recipe ID.")
+                    continue
+                if RecipeCRUD.delete_recipe(int(recipe_id), user_id):
+                    print("Recipe deleted successfully!")
+                else:
+                    print("Failed to delete recipe. Make sure you own this recipe.")
+                break
         except Exception as e:
             print(f"Error deleting recipe: {e}")
     

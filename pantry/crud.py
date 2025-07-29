@@ -232,23 +232,31 @@ class RecipeCRUD:
     @staticmethod
     def add_recipe(name, country_id, instructions, prep_time="", cook_time="", servings=None, family_notes="", user_id=None):
         """Add a new recipe and return its ID"""
-        query = """
-            INSERT INTO recipes (name, country_id, instructions, prep_time, cook_time, servings, family_notes, user_id)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-        """
-        result = pantry_vault.execute_update(query, (name, country_id, instructions, prep_time, cook_time, servings, family_notes, user_id))
-        if result > 0:
-            get_id_query = "SELECT LAST_INSERT_ID() as id"
-            id_result = pantry_vault.execute_query(get_id_query)
-            return id_result[0]['id'] if id_result else None
-        return None
+        try:
+            query = """
+                INSERT INTO recipes (name, country_id, instructions, prep_time, cook_time, servings, family_notes, user_id)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            """
+            result = pantry_vault.execute_update(query, (name, country_id, instructions, prep_time, cook_time, servings, family_notes, user_id))
+            if result > 0:
+                get_id_query = "SELECT LAST_INSERT_ID() as id"
+                id_result = pantry_vault.execute_query(get_id_query)
+                return id_result[0]['id'] if id_result else None
+            return None
+        except Exception as e:
+            print(f"Error adding recipe: {e}")
+            return None
 
     @staticmethod
     def delete_recipe(recipe_id, user_id):
         """Delete a recipe only if it belongs to the given user_id"""
-        query = "DELETE FROM recipes WHERE id = %s AND user_id = %s"
-        result = pantry_vault.execute_update(query, (recipe_id, user_id))
-        return result > 0
+        try:
+            query = "DELETE FROM recipes WHERE id = %s AND user_id = %s"
+            result = pantry_vault.execute_update(query, (recipe_id, user_id))
+            return result > 0
+        except Exception as e:
+            print(f"Error deleting recipe: {e}")
+            return False
     
     @staticmethod
     def display_recipes_table(recipes, title="Recipes"):
