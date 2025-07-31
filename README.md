@@ -27,7 +27,7 @@ Beginners platform: the beginners are not going to worry as long as about recipe
 To run the application in the command line interface, first, clone it.
 ```
 Run 
-python main.py
+python3 main.py
  or
 streamlit run app.py
  or
