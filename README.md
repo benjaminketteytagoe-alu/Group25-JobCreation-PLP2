@@ -1,6 +1,6 @@
 # Pantry Vault - Group25 Job Creation Project (PLP2)
 
-**Pantry Vault** is a command-line interface (CLI) application designed to help individuals — especially beginners, foreigners, or everyday cooks — manage, explore, and preserve culinary recipes from selected African countries. This simple and intuitive tool allows users to browse culturally rich dishes, save their favorites, and contribute to the preservation of African food heritage.
+**Pantry Vault** is a command-line interface (CLI) application designed to help individuals especially beginners, foreigners, or everyday cooks manage, explore, and preserve culinary recipes from selected African countries. This simple and intuitive tool allows users to browse culturally rich dishes, save their favorites, and contribute to the preservation of African food heritage.
 
 ---
 
